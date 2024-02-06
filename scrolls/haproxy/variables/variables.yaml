@@ -1,0 +1,13 @@
+"[compose/{{args.group_name}}/compose.yaml.tera]":
+  frontend:
+    any:
+      mode: http
+      bind: ":1-21,:23-8403,:8405-10000"
+      default_backend: gw
+  backend:
+    gw:
+      mode: http
+      server: s1 host.docker.internal
+"[config/{{args.group_name}}/haproxy/[haproxy.cfg.tera]":
+  network:
+    default:

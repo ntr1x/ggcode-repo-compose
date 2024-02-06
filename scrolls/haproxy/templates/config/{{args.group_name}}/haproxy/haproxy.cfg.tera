@@ -1,0 +1,29 @@
+global
+  maxconn 1000
+
+defaults
+  mode tcp
+  timeout client 10s
+  timeout connect 5s
+  timeout server 10s
+
+frontend stats
+  mode http
+  bind *:8404
+  stats enable
+  stats uri /stats
+  stats refresh 10s
+  stats admin if TRUE
+
+{% for name, options in variables.frontend %}
+frontend {{name}}
+  mode {{options.mode}}
+  bind {{options.bind}}
+  default_backend {{options.default_backend}}
+{% endfor %}
+
+{% for name, options in variables.backend %}
+backend {{name}}
+  mode {{options.mode}}
+  server {{options.server}}
+{% endfor %}

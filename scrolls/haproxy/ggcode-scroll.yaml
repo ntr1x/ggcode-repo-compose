@@ -1,0 +1,12 @@
+name: haproxy
+commands:
+- name: install
+  args:
+  - name: group-name
+    about: Used to determine service name and config location
+    required: true
+- name: uninstall
+  args:
+  - name: group-name
+    about: Used to determine service name and config location
+    required: true
