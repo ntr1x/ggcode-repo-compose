@@ -15,15 +15,17 @@ frontend stats
   stats refresh 10s
   stats admin if TRUE
 
-{% for name, options in variables.frontend %}
+{#- Render frontends #}
+{% for name, options in variables.haproxy.frontend %}
 frontend {{name}}
   mode {{options.mode}}
   bind {{options.bind}}
   default_backend {{options.default_backend}}
-{% endfor %}
+{% endfor -%}
 
-{% for name, options in variables.backend %}
+{#- Render backends -#}
+{% for name, options in variables.haproxy.backend %}
 backend {{name}}
   mode {{options.mode}}
   server {{options.server}}
-{% endfor %}
+{% endfor -%}

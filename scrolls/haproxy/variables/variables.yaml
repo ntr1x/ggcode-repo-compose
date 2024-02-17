@@ -1,4 +1,9 @@
-"[compose/{{args.group_name}}/compose.yaml.tera]":
+compose:
+  profiles:
+    - default
+  networks:
+    default:
+haproxy:
   frontend:
     any:
       mode: http
@@ -8,6 +13,3 @@
     gw:
       mode: http
       server: s1 host.docker.internal
-"[config/{{args.group_name}}/haproxy/[haproxy.cfg.tera]":
-  network:
-    default:

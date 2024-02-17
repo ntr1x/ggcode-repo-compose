@@ -3,9 +3,9 @@ services:
     image: haproxy:alpine
     container_name: {{args.group_name}}_haproxy
     profiles:
-      {% for profile in variables.profile %}
+      {%- for profile in variables.compose.profiles %}
       - {{profile}}
-      {% endfor %}
+      {%- endfor %}
     restart: unless-stopped
     deploy:
       resources:
@@ -17,6 +17,6 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
-      {% for name, network in variables.networks %}
-      {{network.name}}:
-      {% endfor %}
+      {%- for name, network in variables.compose.networks %}
+      {{name}}:
+      {% endfor -%}
