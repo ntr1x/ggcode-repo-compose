@@ -1,0 +1,39 @@
+services:
+  {{bundle.name}}_postgres:
+    image: {{manifest.image}}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    volumes:
+      - ../../config/{{bundle.name}}/postgres/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+      - {{bundle.name}}_postgres:/var/lib/postgresql/data
+    {%- if manifest.profiles | length > 0 %}
+    profiles:
+      {%- for profile in manifest.profiles %}
+      - {{profile}}
+      {%- endfor -%}
+    {%- endif %}
+    {%- if manifest.ports | length > 0 %}
+    ports:
+      {%- for port in manifest.ports %}
+      - "{{port.host}}:{{port.container}}"
+      {%- endfor -%}
+    {%- endif %}
+    {%- if manifest.environment | length > 0 %}
+    environment:
+      {%- for k, v in manifest.environment %}
+      {{k}}: {{v}}
+      {%- endfor -%}
+    {%- endif %}
+    {%- if manifest.networks | length > 0 %}
+    networks:
+      {%- for name, network in manifest.networks %}
+      {{name}}:
+      {%- endfor -%}
+    {%- endif %}
+
+{# Blank line #}
+volumes:
+  {{bundle.name}}_postgres:

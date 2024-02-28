@@ -1,0 +1,12 @@
+frontend:
+  http:
+    proxy_by_host:
+      - host: kafka-ui.local.example.com
+        backend: ggcode_kafka_ui
+      - host: pgadmin.local.example.com
+        backend: ggcode_pgadmin
+backend:
+  ggcode_kafka_ui:
+    server: s1 ggcode_kafka_ui:8080 check port 8080
+  ggcode_pgadmin:
+    server: s1 ggcode_pgadmin:80 check port 80

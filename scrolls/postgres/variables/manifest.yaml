@@ -1,0 +1,12 @@
+group: ggcode
+image: postgres:14
+profiles:
+  - env
+ports:
+  - host: 5432
+    container: 5432
+environment:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+networks:
+  ggcode:

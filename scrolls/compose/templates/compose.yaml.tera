@@ -1,0 +1,16 @@
+version: "3.9"
+
+{%- if config.include | length > 0 %}
+{# Blank line #}
+include:
+  {%- for ref in config.include %}
+  - path: compose/{{bundle.name}}/{{ref.name}}.compose.yaml
+  {%- endfor %}
+{%- endif %}
+{%- if config.networks | length > 0 %}
+{# Blank line #}
+networks:
+  {%- for name, network in config.networks %}
+  {{name}}:
+  {%- endfor %}
+{%- endif %}

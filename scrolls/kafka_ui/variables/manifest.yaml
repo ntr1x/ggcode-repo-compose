@@ -1,0 +1,10 @@
+image: provectuslabs/kafka-ui:master
+profiles:
+  - env
+ports: []
+depends_on: []
+environment:
+  KAFKA_CLUSTERS_0_NAME: local
+  KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ggcode_kafka:29092
+networks:
+  ggcode:

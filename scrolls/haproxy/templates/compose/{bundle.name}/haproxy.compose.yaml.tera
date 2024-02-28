@@ -1,0 +1,41 @@
+services:
+  {{bundle.name}}_haproxy:
+    image: {{manifest.image}}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 200M
+    volumes:
+      - ../../config/{{bundle.name}}/haproxy:/usr/local/etc/haproxy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    {%- if manifest.profiles | length > 0 %}
+    profiles:
+      {%- for profile in manifest.profiles %}
+      - {{profile}}
+      {%- endfor -%}
+    {%- endif %}
+    {%- if manifest.ports | length > 0 %}
+    ports:
+      {%- for port in manifest.ports %}
+      - "{{port.host}}:{{port.container}}"
+      {%- endfor -%}
+    {%- endif %}
+    {%- if manifest.environment | length > 0 %}
+    environment:
+      {%- for k, v in manifest.environment %}
+      {{k}}: {{v}}
+      {%- endfor -%}
+    {%- endif %}
+    {%- if manifest.networks | length > 0 %}
+    networks:
+      {%- for name, network in manifest.networks %}
+      {{name}}:
+      {%- endfor -%}
+    {%- endif %}
+
+{# Blank line #}
+volumes:
+  {{bundle.name}}_kafka:

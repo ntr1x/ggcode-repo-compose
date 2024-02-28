@@ -1,0 +1,38 @@
+services:
+  {{bundle.name}}_kafka:
+    image: {{manifest.image}}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    volumes:
+      - {{bundle.name}}_kafka:/bitnami/kafka
+    {%- if manifest.profiles | length > 0 %}
+    profiles:
+      {%- for profile in manifest.profiles %}
+      - {{profile}}
+      {%- endfor -%}
+    {%- endif %}
+    {%- if manifest.ports | length > 0 %}
+    ports:
+      {%- for port in manifest.ports %}
+      - "{{port.host}}:{{port.container}}"
+      {%- endfor -%}
+    {%- endif %}
+    {%- if manifest.environment | length > 0 %}
+    environment:
+      {%- for k, v in manifest.environment %}
+      {{k}}: {{v}}
+      {%- endfor -%}
+    {%- endif %}
+    {%- if manifest.networks | length > 0 %}
+    networks:
+      {%- for name, network in manifest.networks %}
+      {{name}}:
+      {%- endfor -%}
+    {%- endif %}
+
+{# Blank line -#}
+volumes:
+  {{bundle.name}}_kafka:

@@ -1,4 +1,23 @@
-name: docker
-title: GGCode Docker Repository
+name: compose
+actions:
+- name: run
+  path: actions/run.luau
 scrolls:
-- path: scrolls/haproxy
+- name: compose
+  path: scrolls/compose
+- name: haproxy
+  path: scrolls/haproxy
+- name: postgres
+  path: scrolls/postgres
+- name: kafka
+  path: scrolls/kafka
+- name: kafka_ui
+  path: scrolls/kafka_ui
+- name: pgadmin
+  path: scrolls/pgadmin
+repositories:
+- name: central
+  uri: git@github.com:ntr1x/ggcode-repo-central.git
+targets:
+- name: '@examples'
+  path: examples

@@ -1,0 +1,9 @@
+include:
+  - name: haproxy
+  - name: kafka
+  - name: kafka_ui
+  - name: pgadmin
+  - name: postgres
+
+networks:
+  ggcode:
