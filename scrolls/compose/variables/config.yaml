@@ -1,9 +1,11 @@
+version: "3.9"
+
 include:
-  - name: haproxy
-  - name: kafka
-  - name: kafka_ui
-  - name: pgadmin
-  - name: postgres
+  - path: compose/env/env_haproxy.compose.yaml
+  - path: compose/env/env_kafka.compose.yaml
+  - path: compose/env/env_kafka_ui.compose.yaml
+  - path: compose/env/env_pgadmin.compose.yaml
+  - path: compose/env/env_postgres.compose.yaml
 
 networks:
-  ggcode:
+  default:
