@@ -15,6 +15,8 @@ scrolls:
   path: scrolls/kafka_ui
 - name: pgadmin
   path: scrolls/pgadmin
+- name: swagger_ui
+  path: scrolls/swagger_ui
 repositories:
 - name: central
   uri: git@github.com:ntr1x/ggcode-repo-central.git

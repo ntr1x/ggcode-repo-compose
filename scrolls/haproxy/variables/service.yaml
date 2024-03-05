@@ -8,7 +8,7 @@ manifest:
         cpus: "0.5"
         memory: 200M
   volumes:
-    - ../../config/env/haproxy:/usr/local/etc/haproxy
+    - ../../config/env/env_haproxy:/usr/local/etc/haproxy
   extra_hosts:
     - "host.docker.internal:host-gateway"
   profiles:
