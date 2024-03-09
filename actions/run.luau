@@ -32,7 +32,9 @@ ggcode.generate "@/haproxy" {
             };
             route.route('api', 'http://api.local.example.com') {
                 route.proxy('/api/service_catalog', 'http://host.docker.internal:8080', { cors = "*", optional = true });
-                route.proxy('/api/service_basket', 'http://host.docker.internal:8080', { cors = "*", optional = true });
+                route.proxy('/api/service_customers', 'http://host.docker.internal:8081', { cors = "*", optional = true });
+                route.proxy('/api/service_basket', 'http://host.docker.internal:8082', { cors = "*", optional = true });
+                route.proxy('/api/service_payments', 'http://host.docker.internal:8083', { cors = "*", optional = true });
             };
         }
     }
@@ -63,7 +65,10 @@ ggcode.generate "@/swagger_ui" {
     variables = {
         config = {
             urls = {
-                { name = "Service Catalogue", url = "http://api.local.example.com/api/service_catalog/v3/api-docs" }
+                { name = "Service Catalogue", url = "http://api.local.example.com/api/service_catalog/v3/api-docs" },
+                { name = "Service Customers", url = "http://api.local.example.com/api/service_customers/v3/api-docs" },
+                { name = "Service Basket", url = "http://api.local.example.com/api/service_basket/v3/api-docs" },
+                { name = "Service Payments", url = "http://api.local.example.com/api/service_payments/v3/api-docs" },
             }
         }
     }
