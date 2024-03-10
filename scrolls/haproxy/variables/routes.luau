@@ -1,4 +1,4 @@
-local route = require('docker/haproxy/route')
+local route = require('compose/haproxy/route')
 
 return {
     route.route('env_kafka_ui', 'http://kafka-ui.local.example.com') {

@@ -1,5 +1,5 @@
 local ggcode = require("ggcode")
-local route = require('docker/haproxy/route')
+local route = require('composes/haproxy/route')
 
 ggcode.generate "@/compose" {
     target = '@examples',
