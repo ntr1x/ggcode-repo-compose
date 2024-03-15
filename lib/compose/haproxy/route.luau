@@ -3,7 +3,7 @@ local OBJECT = require('util/object')
 local Path = require('util/path')
 
 local function proxy(path: string, uri: string, options: table)
-    local backend_uri = URI.parse(uri)
+    local backend_uri = URI:parse(uri)
     backend_uri.port = backend_uri.port or 80
 
     if type(options) == 'table' then
@@ -41,7 +41,7 @@ local function proxy(path: string, uri: string, options: table)
 end
 
 local function route(name: string, uri: string, options: table)
-    local frontend_uri = URI.parse(uri)
+    local frontend_uri = URI:parse(uri)
     frontend_uri.port = frontend_uri.port or 80
 
     return function (proxies: table)

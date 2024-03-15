@@ -1,5 +1,5 @@
 local ggcode = require("ggcode")
-local route = require('composes/haproxy/route')
+local route = require('compose/haproxy/route')
 
 ggcode.generate "@/compose" {
     target = '@examples',
@@ -12,6 +12,7 @@ ggcode.generate "@/compose" {
                 { path = "compose/env/env_pgadmin.compose.yaml" },
                 { path = "compose/env/env_postgres.compose.yaml" },
                 { path = "compose/env/env_swagger_ui.compose.yaml" },
+                { path = "compose/env/env_keycloak.compose.yaml" },
             }
         }
     }
@@ -29,6 +30,9 @@ ggcode.generate "@/haproxy" {
             };
             route.route('env_swagger_ui', 'http://swagger-ui.local.example.com') {
                 route.proxy('/', 'http://env_swagger_ui:8080', { check = true });
+            };
+            route.route('env_keycloak', 'http://auth.local.example.com') {
+                route.proxy('/', 'http://env_keycloak:8080', { check = true });
             };
             route.route('api', 'http://api.local.example.com') {
                 route.proxy('/api/service_catalog', 'http://host.docker.internal:8080', { cors = "*", optional = true });
@@ -56,6 +60,16 @@ ggcode.generate "@/pgadmin" {
 }
 
 ggcode.generate "@/postgres" {
+    target = '@examples',
+    variables = {
+        databases = {
+            { name = 'keycloak', username = 'keycloak', password = 'keycloak' },
+            { name = 'app', username = 'app', password = 'app' },
+        }
+    }
+}
+
+ggcode.generate "@/keycloak" {
     target = '@examples',
     variables = {}
 }

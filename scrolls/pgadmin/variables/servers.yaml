@@ -1,25 +1,7 @@
-Servers:
-  "1":
-    Name: Postgres
-    Group: Default
-    Port: 5432
-    Username: postgres
-    Host: env_postgres
-    SSLMode: prefer
-    MaintenanceDB: postgres
-  "2":
-    Name: App
-    Group: Default
-    Port: 5432
-    Username: app
-    Host: env_postgres
-    SSLMode: prefer
-    MaintenanceDB: app
-  "3":
-    Name: Keycloak
-    Group: Default
-    Port: 5432
-    Username: keycloak
-    Host: env_postgres
-    SSLMode: prefer
-    MaintenanceDB: keycloak
+- Name: Postgres
+  Group: Default
+  Port: 5432
+  Username: postgres
+  Host: env_postgres
+  SSLMode: prefer
+  MaintenanceDB: postgres

@@ -1,7 +1,7 @@
 -- Bootstrap databases
 {# Blank line -#}
 
-{%- for database in config.databases %}
+{%- for database in databases %}
 -- Bootstrap "{{database.name}}" database
 
 CREATE USER "{{database.username}}" WITH password '{{database.password}}' CREATEDB;

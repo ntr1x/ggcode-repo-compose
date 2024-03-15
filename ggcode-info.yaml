@@ -1,7 +1,7 @@
 name: compose
 actions:
-- name: run
-  path: actions/run.luau
+- name: generate
+  path: actions/generate.luau
 scrolls:
 - name: compose
   path: scrolls/compose
@@ -13,6 +13,8 @@ scrolls:
   path: scrolls/kafka
 - name: kafka_ui
   path: scrolls/kafka_ui
+- name: keycloak
+  path: scrolls/keycloak
 - name: pgadmin
   path: scrolls/pgadmin
 - name: swagger_ui

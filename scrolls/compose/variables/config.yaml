@@ -7,6 +7,7 @@ include:
   - path: compose/env/env_pgadmin.compose.yaml
   - path: compose/env/env_postgres.compose.yaml
   - path: compose/env/env_swagger_ui.compose.yaml
+  - path: compose/env/env_keycloak.compose.yaml
 
 networks:
   default:

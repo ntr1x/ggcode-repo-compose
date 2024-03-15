@@ -1,7 +1,0 @@
-databases:
-  - name: keycloak
-    username: keycloak
-    password: keycloak
-  - name: app
-    username: app
-    password: app
