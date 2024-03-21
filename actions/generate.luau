@@ -1,5 +1,20 @@
 local ggcode = require("ggcode")
-local route = require('compose/haproxy/route')
+local haproxy = require('compose/haproxy')
+local postgres = require('compose/postgres')
+local pgadmin = require('compose/pgadmin')
+local keycloak = require('compose/keycloak')
+
+local datasource_keycloak = {
+    uri = 'jdbc:postgresql://env_postgres:5432/keycloak',
+    username = 'keycloak',
+    password = 'keycloak'
+}
+
+local datasource_app = {
+    uri = 'jdbc:postgresql://env_postgres:5432/app',
+    username = 'app',
+    password = 'app'
+}
 
 ggcode.generate "@/compose" {
     target = '@examples',
@@ -20,58 +35,55 @@ ggcode.generate "@/compose" {
 
 ggcode.generate "@/haproxy" {
     target = '@examples',
-    variables = {
-        routes = {
-            route.route('env_kafka_ui', 'http://kafka-ui.local.example.com') {
-                route.proxy('/', 'http://env_kafka_ui:8080', { check = true })
-            };
-            route.route('env_pgadmin', 'http://pgadmin.local.example.com') {
-                route.proxy('/', 'http://env_pgadmin:80', { check = true })
-            };
-            route.route('env_swagger_ui', 'http://swagger-ui.local.example.com') {
-                route.proxy('/', 'http://env_swagger_ui:8080', { check = true });
-            };
-            route.route('env_keycloak', 'http://auth.local.example.com') {
-                route.proxy('/', 'http://env_keycloak:8080', { check = true });
-            };
-            route.route('api', 'http://api.local.example.com') {
-                route.proxy('/api/service_catalog', 'http://host.docker.internal:8080', { cors = "*", optional = true });
-                route.proxy('/api/service_customers', 'http://host.docker.internal:8081', { cors = "*", optional = true });
-                route.proxy('/api/service_basket', 'http://host.docker.internal:8082', { cors = "*", optional = true });
-                route.proxy('/api/service_payments', 'http://host.docker.internal:8083', { cors = "*", optional = true });
-            };
-        }
+    variables = haproxy.build {
+        haproxy.Route:from_arrow('http://kafka-ui.local.example.com', 'http://env_kafka_ui:8080');
+        haproxy.Route:from_arrow('http://pgadmin.local.example.com', 'http://env_pgadmin:80');
+        haproxy.Route:from_arrow('http://swagger-ui.local.example.com', 'http://env_swagger_ui:8080');
+        haproxy.Route:from_arrow('http://auth.local.example.com', 'http://env_keycloak:8080')
+            :with_redirect_prefix('/auth');
+        haproxy.Route:from_uri_string('http://api.local.example.com')
+            :with_name('api')
+            :with_proxies({
+                haproxy.Proxy:from_path_string('/api/service_catalog')
+                    :with_cors('*')
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8080'):with_optional(true));
+                haproxy.Proxy:from_path_string('/api/service_customers')
+                    :with_cors('*')
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8081'):with_optional(true));
+                haproxy.Proxy:from_path_string('/api/service_basket')
+                    :with_cors('*')
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8082'):with_optional(true));
+                haproxy.Proxy:from_path_string('/api/service_payments')
+                    :with_cors('*')
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8083'):with_optional(true));
+            });
     }
 }
 
-ggcode.generate "@/kafka" {
-    target = '@examples',
-    variables = {}
-}
-
-ggcode.generate "@/kafka_ui" {
-    target = '@examples',
-    variables = {}
-}
+ggcode.generate "@/kafka" { target = '@examples' }
+ggcode.generate "@/kafka_ui" { target = '@examples' }
 
 ggcode.generate "@/pgadmin" {
     target = '@examples',
-    variables = {}
+    variables = pgadmin.build {
+        pgadmin.Server:from_datasource(datasource_keycloak),
+        pgadmin.Server:from_datasource(datasource_app),
+    }
 }
 
 ggcode.generate "@/postgres" {
     target = '@examples',
-    variables = {
-        databases = {
-            { name = 'keycloak', username = 'keycloak', password = 'keycloak' },
-            { name = 'app', username = 'app', password = 'app' },
-        }
+    variables = postgres.build {
+        postgres.Database:from_datasource(datasource_keycloak),
+        postgres.Database:from_datasource(datasource_app),
     }
 }
 
 ggcode.generate "@/keycloak" {
     target = '@examples',
-    variables = {}
+    variables = keycloak.build {
+        keycloak.Manifest:new():with_datasource(datasource_keycloak)
+    }
 }
 
 ggcode.generate "@/swagger_ui" {

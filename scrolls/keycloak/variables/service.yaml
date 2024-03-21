@@ -7,9 +7,6 @@ manifest:
       limits:
         cpus: "1"
         memory: 1G
-  volumes:
-    # - ../../config/env/env_keycloak/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
-    # - ../../config/env/env_keycloak/themes/app:/opt/bitnami/keycloak/themes/app
   depends_on:
     - env_postgres
   profiles:

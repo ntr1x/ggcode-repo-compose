@@ -24,11 +24,17 @@ frontend routes
 
   {#- Render frontends #}
   {% for route in routes %}
-  acl acl_{{route.name}}_host hdr(host) -i {{route.hostname}}
+  acl acl__{{route.name}}__host hdr(host) -i {{route.hostname}}
+  {%- if route.redirect %}
+  {%- if route.redirect.type == 'prefix' %}
+  acl acl__{{route.name}}__redirect__prefix path_beg {{route.redirect.prefix}}
+  http-request redirect code {{route.redirect.code}} prefix {{route.redirect.prefix}} if acl__{{route.name}}__host !acl__{{route.name}}__redirect__prefix
+  {% endif -%}
+  {%- endif -%}
   {% for proxy in route.proxies %}
-  acl acl_{{route.name}}_path_{{loop.index}} path {{proxy.path}}
-  acl acl_{{route.name}}_path_{{loop.index}} path_beg {{proxy.path}}
-  use_backend {{route.name}}_{{loop.index}} if acl_{{route.name}}_host acl_{{route.name}}_path_{{loop.index}}
+  acl acl__{{route.name}}__path__{{loop.index}} path {{proxy.path}}
+  acl acl__{{route.name}}__path__{{loop.index}} path_beg {{proxy.path}}
+  use_backend {{route.name}}__{{loop.index}} if acl__{{route.name}}__host acl__{{route.name}}__path__{{loop.index}}
   {% endfor -%}
   {%- endfor -%}
 
@@ -46,12 +52,12 @@ backend default_cors
 {%- for route in routes -%}
 {%- for proxy in route.proxies %}
 {# Blank line #}
-backend {{route.name}}_{{loop.index}}
+backend {{route.name}}__{{loop.index}}
   mode http
   option httpclose
   option forwardfor if-none
   option forwarded proto host by by_port for
-  {%- if proxy.cors is defined %}
+  {%- if proxy.cors %}
   # START CORS
   http-response add-header Access-Control-Allow-Origin "{{proxy.cors.origin | default(value="*")}}"
   http-response add-header Access-Control-Allow-Headers "*"
@@ -61,7 +67,7 @@ backend {{route.name}}_{{loop.index}}
   # END CORS
   {%- endif %}
   {%- for server in proxy.servers %}
-  server s{{loop.index}} {{server.hostname}}:{{server.port}} check{% if server.check %} port {{server.check.port}}{% endif %}{% if server.optional %} init-addr libc,none{% endif %}
+  server s{{loop.index}} {{server.hostname}}:{{server.port}}{% if server.check %} check{% if server.check.port %} port {{server.check.port}}{% endif %}{% endif %}{% if server.optional %} init-addr libc,none{% endif %}
   {%- endfor -%}
 {% endfor -%}
 {%- endfor %}

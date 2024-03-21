@@ -1,16 +1,21 @@
-local Database = {
-  name = nil,
-  username = nil,
-  password = nil,
-}
+local Database = require('compose/postgres/Database')
 
-function Database:new(o)
-  o = o or {}
-  setmetatable(o, self)
-  self.__index = self
-  return o
+function build (entries: table)
+  local databases = {}
+
+  for i, entry in entries do
+    if typeof(entry) == 'table' and entry.__type == 'Database' then
+      local database = entry
+      databases[#databases + 1] = database:unwrap()
+    end
+  end
+
+  return {
+    databases = databases
+  }
 end
 
 return {
   Database = Database,
+  build = build
 }

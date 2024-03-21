@@ -1,32 +1,21 @@
-local Path = require('util/path')
+local Server = require('compose/pgadmin/Server')
 
-local Server = {
-  Name = 'Postgres',
-  Group = 'Default',
-  Port = 5432,
-  Username = 'postgres',
-  Host = 'env_postgres',
-  SSLMode = 'prefer',
-  MaintenanceDB = 'postgres'
-}
+function build (entries: table)
+  local servers = {}
 
-function Server:new(o)
-  o = o or {}
-  setmetatable(o, self)
-  self.__index = self
-  return o
-end
+  for i, entry in entries do
+    if typeof(entry) == 'table' and entry.__type == 'Server' then
+      local server = entry
+      servers[#servers + 1] = server:unwrap()
+    end
+  end
 
-function Server:from_database(db: table)
-  local uri = db.uri
-  return Server:new({
-    Name = db.name,
-    Port = db.port,
-    Username = db.username,
-    Host = db.host,
-  })
+  return {
+    servers = servers
+  }
 end
 
 return {
   Server = Server,
+  build = build
 }

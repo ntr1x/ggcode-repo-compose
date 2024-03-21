@@ -2,6 +2,10 @@ name: compose
 actions:
 - name: generate
   path: actions/generate.luau
+- name: test/postgres
+  path: actions/test/postgres.luau
+- name: test/pgadmin
+  path: actions/test/pgadmin.luau
 scrolls:
 - name: compose
   path: scrolls/compose
