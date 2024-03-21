@@ -1,4 +1,4 @@
-local Path = require('util/path')
+local Path = require('core/Path')
 local Server = require('compose/haproxy/Server')
 
 local Proxy = {

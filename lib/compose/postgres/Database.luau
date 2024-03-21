@@ -1,5 +1,5 @@
-local Path = require('util/path')
-local URI = require('util/uri')
+local Path = require('core/Path')
+local URI = require('core/URI')
 
 local Database = {
   __type = 'Database',

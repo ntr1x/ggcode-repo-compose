@@ -1,4 +1,4 @@
-local ggcode = require("ggcode")
+local ggcode = require("core/ggcode")
 local haproxy = require('compose/haproxy')
 local postgres = require('compose/postgres')
 local pgadmin = require('compose/pgadmin')

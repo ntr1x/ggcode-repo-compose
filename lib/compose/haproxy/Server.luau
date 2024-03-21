@@ -1,4 +1,4 @@
-local URI = require('util/uri')
+local URI = require('core/URI')
 
 local Server = {
   hostname = nil,

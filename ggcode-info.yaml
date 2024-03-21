@@ -24,8 +24,8 @@ scrolls:
 - name: swagger_ui
   path: scrolls/swagger_ui
 repositories:
-- name: central
-  uri: git@github.com:ntr1x/ggcode-repo-central.git
+- name: core
+  uri: git@github.com:ntr1x/ggcode-repo-core.git
 targets:
 - name: '@examples'
   path: examples

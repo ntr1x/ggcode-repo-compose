@@ -1,6 +1,6 @@
-local URI = require('util/uri')
-local Path = require('util/path')
-local OBJECT = require('util/object')
+local URI = require('core/URI')
+local Path = require('core/Path')
+local OBJECT = require('core/util/object')
 local Proxy = require('compose/haproxy/Proxy')
 
 local Route = {
