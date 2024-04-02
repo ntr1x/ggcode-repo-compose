@@ -7,6 +7,8 @@ manifest:
       limits:
         cpus: "1"
         memory: 1G
+  volumes:
+    - ../../config/env/env_keycloak/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
   depends_on:
     - env_postgres
   profiles:
@@ -29,4 +31,4 @@ manifest:
     KEYCLOAK_PROXY: passthrough
     PROXY_ADDRESS_FORWARDING: "true"
   networks:
-    default:
+    default: {}

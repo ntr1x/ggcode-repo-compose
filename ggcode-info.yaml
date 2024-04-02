@@ -17,6 +17,8 @@ scrolls:
   path: scrolls/kafka
 - name: kafka_ui
   path: scrolls/kafka_ui
+- name: kcadm
+  path: scrolls/kcadm
 - name: keycloak
   path: scrolls/keycloak
 - name: pgadmin
