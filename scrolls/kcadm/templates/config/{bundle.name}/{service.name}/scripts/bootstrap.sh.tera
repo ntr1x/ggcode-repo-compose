@@ -72,9 +72,28 @@ EOF
 # Grant roles
 {%- for grant in grants %}
 {%- if grant.kind == 'group' %}
-kcadm add-roles -r '{{realm.name}}' --gname {{grant.group}} --rolename '{{grant.role}}'
+kcadm add-roles -r '{{realm.name}}' --gname '{{grant.group}}' --rolename '{{grant.role}}'
 {%- elif grant.kind == 'user' %}
-kcadm add-roles -r '{{realm.name}}' --uusername {{grant.username}} --rolename '{{grant.role}}'
+kcadm add-roles -r '{{realm.name}}' --uusername '{{grant.username}}' --rolename '{{grant.role}}'
 {%- endif -%}
+{%- endfor %}
+{%- endif %}
+
+{# Blank line -#}
+{%- if members | length > 0 -%}
+# Add users to groups
+function add_user_to_group {
+  local member_user=$1
+  local member_group=$2
+  local member_user_id=$(kcadm get users -r '{{realm.name}}' -q exact=true -q username="$member_user" --fields 'id' --format csv | tr -d '"')
+  local member_group_id=$(kcadm get group-by-path/$member_group -r '{{realm.name}}' --fields 'id' --format csv | tr -d '"')
+  if [[ ! -z $member_group_id && ! -z $member_user_id ]]; then
+    echo "Add user with id=$member_user_id ($member_user) to a group with id=$member_group_id ($member_group)"
+    kcadm update -r '{{realm.name}}' users/$member_user_id/groups/$member_group_id
+  fi
+}
+
+{%- for member in members %}
+add_user_to_group '{{member.username}}' '{{member.group}}'
 {%- endfor %}
 {%- endif %}
