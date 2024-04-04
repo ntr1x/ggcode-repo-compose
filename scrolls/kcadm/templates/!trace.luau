@@ -1,9 +1,13 @@
--- print(yaml:stringify({
---   realm = realm,
---   clients = clients,
---   users = users,
---   groups = groups,
---   roles = roles,
---   members = members,
---   grants = grants
--- }))
+print(debug.info(1, "Hello"))
+
+print(yaml:stringify({
+  bundle = bundle,
+  clients = clients,
+  groups = groups,
+  realm = realm,
+  roles = roles,
+  service = service,
+  users = users,
+  members = members,
+  grants = grants
+}))

@@ -1,7 +1,0 @@
-- name: admin
-  realm_roles:
-  - admin
-  - support
-- name: support
-  realm_roles:
-  - support

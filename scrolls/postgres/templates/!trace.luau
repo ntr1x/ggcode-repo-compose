@@ -1,0 +1,6 @@
+-- print(yaml:stringify({
+--   bundle = bundle,
+--   service = service,
+--   databases = databases,
+--   volumes = volumes,
+-- }))
