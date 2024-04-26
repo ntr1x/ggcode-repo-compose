@@ -58,6 +58,9 @@ ggcode.generate "@/haproxy" {
                 haproxy.Proxy:from_path_string('/api/service_payments')
                     :with_cors('*')
                     :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8083'):with_optional(true));
+                haproxy.Proxy:from_path_string('/api/service_events')
+                    :with_cors('*')
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8084'):with_optional(true));
             });
     }
 }
@@ -126,6 +129,7 @@ ggcode.generate "@/swagger_ui" {
                 { name = "Service Customers", url = "http://api.local.example.com/api/service_customers/v3/api-docs" },
                 { name = "Service Basket", url = "http://api.local.example.com/api/service_basket/v3/api-docs" },
                 { name = "Service Payments", url = "http://api.local.example.com/api/service_payments/v3/api-docs" },
+                { name = "Service Events", url = "http://api.local.example.com/api/service_events/v3/api-docs" },
             }
         }
     }
