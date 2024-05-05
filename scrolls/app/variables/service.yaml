@@ -1,0 +1,14 @@
+name: app_service_api
+manifest:
+  image: example/service_api:1.0-SNAPSHOT
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        memory: 600M
+  profiles:
+    - app
+  environment:
+    JAVA_OPTS: "-Xmx512m -Xms256m"
+  networks:
+    default: {}

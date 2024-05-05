@@ -13,6 +13,7 @@ manifest:
     - "host.docker.internal:host-gateway"
   profiles:
     - env
+    - app
   ports:
     - "80:80"
     - "8404:8404"

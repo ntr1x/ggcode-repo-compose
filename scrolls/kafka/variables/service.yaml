@@ -10,6 +10,7 @@ manifest:
     - env_kafka:/bitnami/kafka
   profiles:
     - env
+    - app
   ports:
     - "9092:9092"
     - "29092:29092"

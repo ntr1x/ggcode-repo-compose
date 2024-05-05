@@ -4,6 +4,7 @@ local postgres = require('compose/postgres')
 local pgadmin = require('compose/pgadmin')
 local keycloak = require('compose/keycloak')
 local kcadm = require('compose/kcadm')
+local app = require('compose/app')
 
 local datasource_keycloak = {
     uri = 'jdbc:postgresql://env_postgres:5432/keycloak',
@@ -18,7 +19,7 @@ local datasource_app = {
 }
 
 ggcode.generate "@/compose" {
-    target = '@examples',
+    target = '@app',
     variables = {
         config = {
             include = {
@@ -30,13 +31,14 @@ ggcode.generate "@/compose" {
                 { path = "compose/env/env_swagger_ui.compose.yaml" },
                 { path = "compose/env/env_keycloak.compose.yaml" },
                 { path = "compose/env/env_kcadm.compose.yaml" },
+                { path = "compose/app/app_assembly_web.compose.yaml" },
             }
         }
     }
 }
 
 ggcode.generate "@/haproxy" {
-    target = '@examples',
+    target = '@app',
     variables = haproxy.build {
         haproxy.Route:from_arrow('http://kafka-ui.local.example.com', 'http://env_kafka_ui:8080');
         haproxy.Route:from_arrow('http://pgadmin.local.example.com', 'http://env_pgadmin:80');
@@ -46,30 +48,33 @@ ggcode.generate "@/haproxy" {
         haproxy.Route:from_uri_string('http://api.local.example.com')
             :with_name('api')
             :with_proxies({
+                haproxy.Proxy:from_path_string('/api/assembly_web')
+                    :with_cors('*')
+                    :with_server(haproxy.Server:from_uri_string('http://app_assembly_web:8080'):with_optional(true));
                 haproxy.Proxy:from_path_string('/api/service_catalog')
                     :with_cors('*')
-                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8080'):with_optional(true));
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8081'):with_optional(true));
                 haproxy.Proxy:from_path_string('/api/service_customers')
                     :with_cors('*')
-                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8081'):with_optional(true));
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8082'):with_optional(true));
                 haproxy.Proxy:from_path_string('/api/service_basket')
                     :with_cors('*')
-                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8082'):with_optional(true));
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8083'):with_optional(true));
                 haproxy.Proxy:from_path_string('/api/service_payments')
                     :with_cors('*')
-                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8083'):with_optional(true));
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8084'):with_optional(true));
                 haproxy.Proxy:from_path_string('/api/service_events')
                     :with_cors('*')
-                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8084'):with_optional(true));
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8085'):with_optional(true));
             });
     }
 }
 
-ggcode.generate "@/kafka" { target = '@examples' }
-ggcode.generate "@/kafka_ui" { target = '@examples' }
+ggcode.generate "@/kafka" { target = '@app' }
+ggcode.generate "@/kafka_ui" { target = '@app' }
 
 ggcode.generate "@/pgadmin" {
-    target = '@examples',
+    target = '@app',
     variables = pgadmin.build {
         pgadmin.Server:from_datasource(datasource_keycloak),
         pgadmin.Server:from_datasource(datasource_app),
@@ -77,7 +82,7 @@ ggcode.generate "@/pgadmin" {
 }
 
 ggcode.generate "@/postgres" {
-    target = '@examples',
+    target = '@app',
     variables = postgres.build {
         postgres.Database:from_datasource(datasource_keycloak),
         postgres.Database:from_datasource(datasource_app),
@@ -85,14 +90,14 @@ ggcode.generate "@/postgres" {
 }
 
 ggcode.generate "@/keycloak" {
-    target = '@examples',
+    target = '@app',
     variables = keycloak.build {
         keycloak.Manifest:new():with_datasource(datasource_keycloak),
     }
 }
 
 ggcode.generate "@/kcadm" {
-    target = '@examples',
+    target = '@app',
     variables = kcadm.build {
         kcadm.Realm:from('application'),
 
@@ -121,10 +126,11 @@ ggcode.generate "@/kcadm" {
 }
 
 ggcode.generate "@/swagger_ui" {
-    target = '@examples',
+    target = '@app',
     variables = {
         config = {
             urls = {
+                { name = "Assembly Web", url = "http://api.local.example.com/api/assembly_web/v3/api-docs" },
                 { name = "Service Catalogue", url = "http://api.local.example.com/api/service_catalog/v3/api-docs" },
                 { name = "Service Customers", url = "http://api.local.example.com/api/service_customers/v3/api-docs" },
                 { name = "Service Basket", url = "http://api.local.example.com/api/service_basket/v3/api-docs" },
@@ -133,4 +139,20 @@ ggcode.generate "@/swagger_ui" {
             }
         }
     }
+}
+
+local service_assembly_web =
+
+ggcode.generate "@/app" {
+    target = '@app',
+    variables = app.Service
+        :from('app_assembly_web', 'example/assembly_web:1.0-SNAPSHOT')
+        :with_depends_on('env_kafka')
+        :with_depends_on('env_postgres')
+        :with_depends_on('env_keycloak')
+        :with_spring_datasource(datasource_app)
+        :with_env_variable('SPRING_KAFKA_BOOTSTRAP_SERVERS', 'env_kafka:29092')
+        :with_link('env_haproxy:auth.local.example.com')
+        -- :with_env_variable('SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI', 'http://env_keycloak:8080/auth/realms/application')
+        :unwrap()
 }
