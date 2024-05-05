@@ -7,6 +7,8 @@ actions:
 - name: test/pgadmin
   path: actions/test/pgadmin.luau
 scrolls:
+- name: app
+  path: scrolls/app
 - name: compose
   path: scrolls/compose
 - name: haproxy
@@ -29,5 +31,5 @@ repositories:
 - name: core
   uri: git@github.com:ntr1x/ggcode-repo-core.git
 targets:
-- name: '@examples'
-  path: examples
+- name: '@app'
+  path: app

@@ -10,6 +10,7 @@ manifest:
     - env_kafka
   profiles:
     - env
+    - admin
   environment:
     KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: env_kafka:29092
     KAFKA_CLUSTERS_0_NAME: local

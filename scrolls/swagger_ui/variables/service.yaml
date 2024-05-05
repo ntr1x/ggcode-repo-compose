@@ -10,6 +10,7 @@ manifest:
     - ../../config/env/env_swagger_ui/swagger-config.json:/usr/share/nginx/html/swagger-config.json
   profiles:
     - env
+    - app
   environment:
       CONFIG_URL: swagger-config.json
       URL: ""
