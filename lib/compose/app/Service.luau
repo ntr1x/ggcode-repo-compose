@@ -38,6 +38,14 @@ function Service:with_spring_datasource(datasource: table)
   return self
 end
 
+function Service:with_app_openid_client(client: table)
+  self.environment.APP_OPENID_CLIENT_CLIENTID = client.client_id
+  self.environment.APP_OPENID_CLIENT_CLIENTSECRET = client.client_secret
+  self.environment.APP_OPENID_CLIENT_REDIRECTURI = client.redirect_uri
+  self.environment.APP_OPENID_CLIENT_ISSUERURI = client.issuer_uri
+  return self
+end
+
 function Service:with_env_variables(environment: table)
   environment = environment or Meta:table {}
 

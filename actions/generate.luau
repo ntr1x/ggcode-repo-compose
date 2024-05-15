@@ -18,6 +18,11 @@ local datasource_app = {
     password = 'app'
 }
 
+local openid_client = {
+    client_id = 'api',
+    client_secret = '4Ggxc50xzu5j1qFk5rZ4OPHwvNFXLpNX'
+}
+
 ggcode.generate "@/compose" {
     target = '@app',
     variables = {
@@ -51,21 +56,24 @@ ggcode.generate "@/haproxy" {
                 haproxy.Proxy:from_path_string('/api/assembly_web')
                     :with_cors('*')
                     :with_server(haproxy.Server:from_uri_string('http://app_assembly_web:8080'):with_optional(true));
-                haproxy.Proxy:from_path_string('/api/service_catalog')
-                    :with_cors('*')
-                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8081'):with_optional(true));
-                haproxy.Proxy:from_path_string('/api/service_customers')
-                    :with_cors('*')
-                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8082'):with_optional(true));
                 haproxy.Proxy:from_path_string('/api/service_basket')
                     :with_cors('*')
-                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8083'):with_optional(true));
-                haproxy.Proxy:from_path_string('/api/service_payments')
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8081'):with_optional(true));
+                haproxy.Proxy:from_path_string('/api/service_catalog')
                     :with_cors('*')
-                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8084'):with_optional(true));
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8082'):with_optional(true));
+                haproxy.Proxy:from_path_string('/api/service_customers')
+                    :with_cors('*')
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8083'):with_optional(true));
                 haproxy.Proxy:from_path_string('/api/service_events')
                     :with_cors('*')
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8084'):with_optional(true));
+                haproxy.Proxy:from_path_string('/api/service_payments')
+                    :with_cors('*')
                     :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8085'):with_optional(true));
+                haproxy.Proxy:from_path_string('/api/service_security')
+                    :with_cors('*')
+                    :with_server(haproxy.Server:from_uri_string('http://host.docker.internal:8086'):with_optional(true));
             });
     }
 }
@@ -101,7 +109,7 @@ ggcode.generate "@/kcadm" {
     variables = kcadm.build {
         kcadm.Realm:from('application'),
 
-        kcadm.Client:from('api', '4Ggxc50xzu5j1qFk5rZ4OPHwvNFXLpNX'),
+        kcadm.Client:from(openid_client.client_id, openid_client.client_secret),
 
         kcadm.Role:realm('admin'),
         kcadm.Role:realm('support'),
@@ -131,11 +139,12 @@ ggcode.generate "@/swagger_ui" {
         config = {
             urls = {
                 { name = "Assembly Web", url = "http://api.local.example.com/api/assembly_web/v3/api-docs" },
+                { name = "Service Basket", url = "http://api.local.example.com/api/service_basket/v3/api-docs" },
                 { name = "Service Catalogue", url = "http://api.local.example.com/api/service_catalog/v3/api-docs" },
                 { name = "Service Customers", url = "http://api.local.example.com/api/service_customers/v3/api-docs" },
-                { name = "Service Basket", url = "http://api.local.example.com/api/service_basket/v3/api-docs" },
-                { name = "Service Payments", url = "http://api.local.example.com/api/service_payments/v3/api-docs" },
                 { name = "Service Events", url = "http://api.local.example.com/api/service_events/v3/api-docs" },
+                { name = "Service Payments", url = "http://api.local.example.com/api/service_payments/v3/api-docs" },
+                { name = "Service Security", url = "http://api.local.example.com/api/service_security/v3/api-docs" },
             }
         }
     }
@@ -151,6 +160,7 @@ ggcode.generate "@/app" {
         :with_depends_on('env_postgres')
         :with_depends_on('env_keycloak')
         :with_spring_datasource(datasource_app)
+        :with_app_openid_client(openid_client)
         :with_env_variable('SPRING_KAFKA_BOOTSTRAP_SERVERS', 'env_kafka:29092')
         :with_link('env_haproxy:auth.local.example.com')
         -- :with_env_variable('SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI', 'http://env_keycloak:8080/auth/realms/application')
