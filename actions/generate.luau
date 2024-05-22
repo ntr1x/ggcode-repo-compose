@@ -150,8 +150,6 @@ ggcode.generate "@/swagger_ui" {
     }
 }
 
-local service_assembly_web =
-
 ggcode.generate "@/app" {
     target = '@app',
     variables = app.Service
