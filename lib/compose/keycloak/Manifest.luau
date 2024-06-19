@@ -13,6 +13,12 @@ function Manifest:new(o)
   return o
 end
 
+function Manifest:from_datasource(datasource: table)
+  return Manifest
+    :new(o)
+    :with_datasource(datasource)
+end
+
 function Manifest:with_datasource(datasource: table)
   assert(datasource.uri ~= nil)
   local uri = URI:parse_jdbc(datasource.uri)

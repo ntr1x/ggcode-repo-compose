@@ -1,7 +1,10 @@
+local Project = require('core/Project')
 local Meta = require('core/Meta')
 
-local Service = {
-  __type = 'Service',
+local App = {
+  __type = 'App',
+
+  project = nil,
   name = nil,
   image = nil,
   environment = nil,
@@ -9,15 +12,17 @@ local Service = {
   links = nil,
 }
 
-function Service:new(o)
+function App:new(o)
   o = o or {}
   setmetatable(o, self)
   self.__index = self
   return o
 end
 
-function Service:from(name: string, image: string, environment: table)
-  return Service:new({
+function App:from(project: Project, name: string, image: string, environment: table)
+  assert(project ~= nil)
+  return App:new({
+    project = project,
     name = name,
     image = image,
     depends_on = Meta:array {},
@@ -26,19 +31,19 @@ function Service:from(name: string, image: string, environment: table)
   })
 end
 
-function Service:with_env_variable(name: string, value: string)
+function App:with_env_variable(name: string, value: string)
   self.environment[name] = value
   return self
 end
 
-function Service:with_spring_datasource(datasource: table)
+function App:with_spring_datasource(datasource: table)
   self.environment.SPRING_DATASOURCE_URL = datasource.uri
   self.environment.SPRING_DATASOURCE_USERNAME = datasource.username
   self.environment.SPRING_DATASOURCE_PASSWORD = datasource.password
   return self
 end
 
-function Service:with_app_openid_client(client: table)
+function App:with_app_openid_client(client: table)
   self.environment.APP_OPENID_CLIENT_CLIENTID = client.client_id
   self.environment.APP_OPENID_CLIENT_CLIENTSECRET = client.client_secret
   self.environment.APP_OPENID_CLIENT_REDIRECTURI = client.redirect_uri
@@ -46,7 +51,7 @@ function Service:with_app_openid_client(client: table)
   return self
 end
 
-function Service:with_env_variables(environment: table)
+function App:with_env_variables(environment: table)
   environment = environment or Meta:table {}
 
   for name, value in environment do
@@ -56,17 +61,17 @@ function Service:with_env_variables(environment: table)
   return self
 end
 
-function Service:with_depends_on(name: string)
+function App:with_depends_on(name: string)
   self.depends_on[#self.depends_on + 1] = name
   return self
 end
 
-function Service:with_link(link: string)
+function App:with_link(link: string)
   self.links[#self.links + 1] = link
   return self
 end
 
-function Service:unwrap_depends_on()
+function App:unwrap_depends_on()
   if #self.depends_on > 0 then
     return self.depends_on
   end
@@ -74,7 +79,7 @@ function Service:unwrap_depends_on()
   return nil
 end
 
-function Service:unwrap_links()
+function App:unwrap_links()
   if #self.links > 0 then
     return self.links
   end
@@ -82,8 +87,9 @@ function Service:unwrap_links()
   return nil
 end
 
-function Service:unwrap()
+function App:unwrap()
   return {
+    project = self.project:unwrap_project(),
     service = {
       name = self.name,
       manifest = {
@@ -96,4 +102,4 @@ function Service:unwrap()
   }
 end
 
-return Service
+return App

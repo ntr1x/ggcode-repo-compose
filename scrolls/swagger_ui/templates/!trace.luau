@@ -1,5 +1,0 @@
--- print(yaml:stringify({
---   bundle = bundle,
---   config = config,
---   service = service,
--- }))

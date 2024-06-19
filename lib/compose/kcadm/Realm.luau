@@ -2,7 +2,7 @@ local Meta = require('core/Meta')
 
 local Realm = {
   __type = 'Realm',
-  name = '',
+  name = nil,
 }
 
 function Realm:new(o)
