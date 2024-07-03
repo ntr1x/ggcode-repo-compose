@@ -1,7 +1,9 @@
 name: compose
 actions:
-- name: generate
-  path: actions/generate.luau
+- name: generate-app
+  path: actions/generate-app.luau
+- name: generate-store
+  path: actions/generate-store.luau
 - name: test/postgres
   path: actions/test/postgres.luau
 - name: test/pgadmin
@@ -9,6 +11,8 @@ actions:
 scrolls:
 - name: app
   path: scrolls/app
+- name: spa
+  path: scrolls/spa
 - name: compose
   path: scrolls/compose
 - name: haproxy
@@ -33,3 +37,5 @@ repositories:
 targets:
 - name: '@app'
   path: app
+- name: '@store'
+  path: ../../ggcode-generated/ggcode-generated-store

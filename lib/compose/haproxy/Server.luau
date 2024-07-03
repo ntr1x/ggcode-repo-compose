@@ -4,7 +4,8 @@ local Server = {
   hostname = nil,
   port = nil,
   check = true,
-  optional = false
+  optional = false,
+  backup = false,
 }
 
 function Server:new(o)
@@ -47,12 +48,18 @@ function Server:with_optional(optional: boolean)
   return self
 end
 
+function Server:with_backup(backup: boolean)
+  self.backup = backup
+  return self
+end
+
 function Server:unwrap()
   return {
     hostname = self.hostname,
     port = self.port,
     check = self.check,
     optional = self.optional,
+    backup = self.backup,
   }
 end
 

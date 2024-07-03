@@ -1,6 +1,6 @@
-name: app_service_api
+name: app_ui
 manifest:
-  image: example/service_api:1.0-SNAPSHOT
+  image: nginx:latest
   restart: unless-stopped
   deploy:
     resources:

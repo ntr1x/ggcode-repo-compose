@@ -6,6 +6,7 @@ defaults
   timeout client 10s
   timeout connect 5s
   timeout server 10s
+  timeout tunnel 300s
 
 frontend stats
   mode http
@@ -67,7 +68,7 @@ backend {{route.name}}__{{loop.index}}
   # END CORS
   {%- endif %}
   {%- for server in proxy.servers %}
-  server s{{loop.index}} {{server.hostname}}:{{server.port}}{% if server.check %} check{% if server.check.port %} port {{server.check.port}}{% endif %}{% endif %}{% if server.optional %} init-addr libc,none{% endif %}
+  server s{{loop.index}} {{server.hostname}}:{{server.port}}{% if server.check %} check{% if server.check.port %} port {{server.check.port}}{% endif %}{% endif %}{% if server.optional %} init-addr libc,none{% endif %}{% if server.backup %} backup{% endif %}
   {%- endfor -%}
 {% endfor -%}
 {%- endfor %}
