@@ -6,6 +6,7 @@ local Pgadmin = require('compose/Pgadmin')
 local Keycloak = require('compose/Keycloak')
 local Kcadm = require('compose/Kcadm')
 local App = require('compose/App')
+local Spa = require('compose/Spa')
 
 local project = Project:from('store_starter')
 
@@ -41,6 +42,7 @@ ggcode.generate "@/compose" {
         { path = "compose/env/env_keycloak.compose.yaml" },
         { path = "compose/env/env_kcadm.compose.yaml" },
         { path = "compose/app/app_assembly_web.compose.yaml" },
+        { path = "compose/app/app_admin_ui.compose.yaml" },
       }
     }
   }
@@ -61,13 +63,26 @@ ggcode.generate "@/haproxy" {
         :from_arrow('http://auth.local.example.com', 'http://env_keycloak:8080')
         :with_redirect_prefix('/auth');
       Haproxy.Route
+        :from_uri_string('http://admin-ui.local.example.com')
+        :with_proxies({
+          Haproxy.Proxy
+            :from_path_string('/')
+            :with_server(Haproxy.Server:from_uri_string('http://app_admin_ui:80'):with_optional(true))
+            :with_server(Haproxy.Server:from_uri_string('http://host.docker.internal:5173'):with_optional(true):with_backup(true));
+        });
+      Haproxy.Route
         :from_uri_string('http://api.local.example.com')
         :with_name('api')
         :with_proxies({
           Haproxy.Proxy
             :from_path_string('/api/assembly_web')
             :with_cors('*')
-            :with_server(Haproxy.Server:from_uri_string('http://app_assembly_web:8080'):with_optional(true));
+            :with_server(Haproxy.Server:from_uri_string('http://app_assembly_web:8080'):with_optional(true))
+            :with_server(Haproxy.Server:from_uri_string('http://host.docker.internal:8080'):with_optional(true):with_backup(true));
+          Haproxy.Proxy
+            :from_path_string('/api/assembly_web')
+            :with_cors('*')
+            :with_server(Haproxy.Server:from_uri_string('http://host.docker.internal:8080'):with_optional(true));
           Haproxy.Proxy
             :from_path_string('/api/service_basket')
             :with_cors('*')
@@ -77,7 +92,7 @@ ggcode.generate "@/haproxy" {
             :with_cors('*')
             :with_server(Haproxy.Server:from_uri_string('http://host.docker.internal:8082'):with_optional(true));
           Haproxy.Proxy
-            :from_path_string('/api/service_customers')
+            :from_path_string('/api/service_profile')
             :with_cors('*')
             :with_server(Haproxy.Server:from_uri_string('http://host.docker.internal:8083'):with_optional(true));
           Haproxy.Proxy
@@ -180,7 +195,7 @@ ggcode.generate "@/swagger_ui" {
         { name = "Assembly Web", url = "http://api.local.example.com/api/assembly_web/v3/api-docs" },
         { name = "Service Basket", url = "http://api.local.example.com/api/service_basket/v3/api-docs" },
         { name = "Service Catalogue", url = "http://api.local.example.com/api/service_catalog/v3/api-docs" },
-        { name = "Service Customers", url = "http://api.local.example.com/api/service_customers/v3/api-docs" },
+        { name = "Service Profiles", url = "http://api.local.example.com/api/service_profile/v3/api-docs" },
         { name = "Service Events", url = "http://api.local.example.com/api/service_events/v3/api-docs" },
         { name = "Service Payments", url = "http://api.local.example.com/api/service_payments/v3/api-docs" },
         { name = "Service Security", url = "http://api.local.example.com/api/service_security/v3/api-docs" },
@@ -192,14 +207,22 @@ ggcode.generate "@/swagger_ui" {
 ggcode.generate "@/app" {
   target = '@app',
   variables = App
-    :from(project, 'app_assembly_web', 'example/assembly_web:1.0-SNAPSHOT')
+    :from(project, 'app_assembly_web', 'store/assembly_web:1.0-SNAPSHOT')
     :with_depends_on('env_kafka')
     :with_depends_on('env_postgres')
     :with_depends_on('env_keycloak')
     :with_spring_datasource(datasource_app)
     :with_app_openid_client(openid_client)
+    :with_env_variable('JAVA_OPTS', '-Xmx512m -Xms256m')
     :with_env_variable('SPRING_KAFKA_BOOTSTRAP_SERVERS', 'env_kafka:29092')
     :with_link('env_haproxy:auth.local.example.com')
     -- :with_env_variable('SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI', 'http://env_keycloak:8080/auth/realms/application')
+    :unwrap()
+}
+
+ggcode.generate "@/spa" {
+  target = '@app',
+  variables = Spa
+    :from(project, 'app_admin_ui', 'store/admin_ui:1.0-SNAPSHOT')
     :unwrap()
 }
