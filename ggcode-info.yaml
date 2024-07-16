@@ -1,7 +1,5 @@
 name: compose
 actions:
-- name: generate-app
-  path: actions/generate-app.luau
 - name: generate-store
   path: actions/generate-store.luau
 - name: test/postgres
