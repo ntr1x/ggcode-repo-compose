@@ -84,7 +84,7 @@ ggcode.generate "@/haproxy" {
             :with_cors('*')
             :with_server(Haproxy.Server:from_uri_string('http://host.docker.internal:8080'):with_optional(true));
           Haproxy.Proxy
-            :from_path_string('/api/service_basket')
+            :from_path_string('/api/service_structure')
             :with_cors('*')
             :with_server(Haproxy.Server:from_uri_string('http://host.docker.internal:8081'):with_optional(true));
           Haproxy.Proxy
@@ -193,7 +193,7 @@ ggcode.generate "@/swagger_ui" {
     config = {
       urls = {
         { name = "Assembly Web", url = "http://api.local.example.com/api/assembly_web/v3/api-docs" },
-        { name = "Service Basket", url = "http://api.local.example.com/api/service_basket/v3/api-docs" },
+        { name = "Service Structure", url = "http://api.local.example.com/api/service_structure/v3/api-docs" },
         { name = "Service Catalogue", url = "http://api.local.example.com/api/service_catalog/v3/api-docs" },
         { name = "Service Profiles", url = "http://api.local.example.com/api/service_profile/v3/api-docs" },
         { name = "Service Events", url = "http://api.local.example.com/api/service_events/v3/api-docs" },
