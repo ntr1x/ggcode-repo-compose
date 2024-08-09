@@ -1,4 +1,4 @@
-name: env_pgadmin
+name: env-pgadmin
 manifest:
   image: dpage/pgadmin4
   restart: unless-stopped
@@ -7,9 +7,9 @@ manifest:
       limits:
         memory: 250M
   volumes:
-    - ../../config/env/env_pgadmin/servers.json:/pgadmin4/servers.json
+    - ../../config/env/env-pgadmin/servers.json:/pgadmin4/servers.json
   depends_on:
-    - env_postgres
+    - env-postgres
   profiles:
     - env
     - admin

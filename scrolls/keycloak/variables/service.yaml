@@ -1,4 +1,4 @@
-name: env_keycloak
+name: env-keycloak
 manifest:
   image: bitnami/keycloak:latest
   restart: unless-stopped
@@ -8,7 +8,7 @@ manifest:
         cpus: "1"
         memory: 1G
   depends_on:
-    - env_postgres
+    - env-postgres
   profiles:
     - env
     - app
@@ -16,7 +16,7 @@ manifest:
     KEYCLOAK_ADMIN: admin
     KEYCLOAK_ADMIN_PASSWORD: GfhjkmRfhjkm1
     KEYCLOAK_CACHE_TYPE: local
-    KEYCLOAK_DATABASE_HOST: env_postgres
+    KEYCLOAK_DATABASE_HOST: env-postgres
     KEYCLOAK_DATABASE_NAME: keycloak
     KEYCLOAK_DATABASE_PASSWORD: keycloak
     KEYCLOAK_DATABASE_PORT: 5432

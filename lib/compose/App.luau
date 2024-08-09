@@ -36,19 +36,48 @@ function App:with_env_variable(name: string, value: string)
   return self
 end
 
-function App:with_spring_datasource(datasource: table)
-  self.environment.SPRING_DATASOURCE_URL = datasource.uri
-  self.environment.SPRING_DATASOURCE_USERNAME = datasource.username
-  self.environment.SPRING_DATASOURCE_PASSWORD = datasource.password
+function App:with_env_variables(environment: table)
+  environment = environment or Meta:table {}
+
+  for name, value in environment do
+    self.environment[name] = value
+  end
+
   return self
 end
 
+function App:with_spring_datasource(datasource: table)
+  assert(datasource ~= nil)
+  assert(datasource.uri ~= nil)
+  return self:with_env_variables({
+    SPRING_DATASOURCE_URL = datasource.uri,
+    SPRING_DATASOURCE_USERNAME = datasource.username,
+    SPRING_DATASOURCE_PASSWORD = datasource.password,
+  })
+end
+
 function App:with_app_openid_client(client: table)
-  self.environment.APP_OPENID_CLIENT_CLIENTID = client.client_id
-  self.environment.APP_OPENID_CLIENT_CLIENTSECRET = client.client_secret
-  self.environment.APP_OPENID_CLIENT_REDIRECTURI = client.redirect_uri
-  self.environment.APP_OPENID_CLIENT_ISSUERURI = client.issuer_uri
-  return self
+  assert(client ~= nil)
+  assert(client.client_id ~= nil)
+  assert(client.client_secret ~= nil)
+  return self:with_env_variables({
+    APP_OPENID_CLIENT_CLIENTID = client.client_id,
+    APP_OPENID_CLIENT_CLIENTSECRET = client.client_secret,
+    APP_OPENID_CLIENT_REDIRECTURI = client.redirect_uri,
+    APP_OPENID_CLIENT_ISSUERURI = client.issuer_uri,
+  })
+end
+
+function App:with_app_minio_client(client: table)
+  assert(client ~= nil)
+  assert(client.uri ~= nil)
+  assert(client.access_key ~= nil)
+  assert(client.secret_key ~= nil)
+  return self:with_env_variables({
+    APP_MINIO_TARGET_SERVER = client.uri,
+    APP_MINIO_ACCESS_KEY = client.access_key,
+    APP_MINIO_SECRET_KEY = client.secret_key,
+  })
 end
 
 function App:with_env_variables(environment: table)

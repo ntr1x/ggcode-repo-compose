@@ -1,4 +1,4 @@
-name: env_postgres
+name: env-postgres
 manifest:
   image: postgres:14
   restart: unless-stopped
@@ -7,8 +7,8 @@ manifest:
       limits:
         memory: 500M
   volumes:
-    - ../../config/env/env_postgres/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
-    - env_postgres:/var/lib/postgresql/data
+    - ../../config/env/env-postgres/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+    - env-postgres:/var/lib/postgresql/data
   profiles:
     - env
     - app

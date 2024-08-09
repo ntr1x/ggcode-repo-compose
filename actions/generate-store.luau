@@ -4,20 +4,23 @@ local Haproxy = require('compose/Haproxy')
 local Postgres = require('compose/Postgres')
 local Pgadmin = require('compose/Pgadmin')
 local Keycloak = require('compose/Keycloak')
+local Minio = require('compose/Minio')
 local Kcadm = require('compose/Kcadm')
+local Mcli = require('compose/Mcli')
 local App = require('compose/App')
 local Spa = require('compose/Spa')
+local Worker = require('compose/Worker')
 
 local project = Project:from('store_starter')
 
 local datasource_keycloak = {
-  uri = 'jdbc:postgresql://env_postgres:5432/keycloak',
+  uri = 'jdbc:postgresql://env-postgres:5432/keycloak',
   username = 'keycloak',
   password = 'keycloak'
 }
 
 local datasource_app = {
-  uri = 'jdbc:postgresql://env_postgres:5432/app',
+  uri = 'jdbc:postgresql://env-postgres:5432/app',
   username = 'app',
   password = 'app'
 }
@@ -27,22 +30,48 @@ local openid_client = {
   client_secret = '4Ggxc50xzu5j1qFk5rZ4OPHwvNFXLpNX'
 }
 
+local minio_client = {
+  uri = 'http://env-minio:9000',
+  access_key = 'y5LeRZ84J4SsenpaIxMl',
+  secret_key = 'AZitoDkffcEYFYUmV4CGv1jr2fiXWIw4uSvdFlDu'
+}
+
+ggcode.generate "@/make" {
+  target = '@store',
+  variables = {
+    project = project:unwrap_project(),
+    run = {
+      profiles = { 'app', 'env' },
+    },
+    build = {
+      images = {
+        { context = 'build/app/app-worker-product-image', bundle = 'app', namespace = 'store', name = 'worker_product_image', version = '1.0-SNAPSHOT' },
+        { context = 'build/app/app-worker-employee-table', bundle = 'app', namespace = 'store', name = 'worker_employee_table', version = '1.0-SNAPSHOT' },
+      }
+    }
+  }
+}
+
 ggcode.generate "@/compose" {
   target = '@store',
   variables = {
     project = project:unwrap_project(),
     config = {
       include = {
-        { path = "compose/env/env_haproxy.compose.yaml" },
-        { path = "compose/env/env_kafka.compose.yaml" },
-        { path = "compose/env/env_kafka_ui.compose.yaml" },
-        { path = "compose/env/env_pgadmin.compose.yaml" },
-        { path = "compose/env/env_postgres.compose.yaml" },
-        { path = "compose/env/env_swagger_ui.compose.yaml" },
-        { path = "compose/env/env_keycloak.compose.yaml" },
-        { path = "compose/env/env_kcadm.compose.yaml" },
-        { path = "compose/app/app_assembly_web.compose.yaml" },
-        { path = "compose/app/app_admin_ui.compose.yaml" },
+        { path = "compose/env/env-haproxy.compose.yaml" },
+        { path = "compose/env/env-kafka.compose.yaml" },
+        { path = "compose/env/env-kafka-ui.compose.yaml" },
+        { path = "compose/env/env-pgadmin.compose.yaml" },
+        { path = "compose/env/env-postgres.compose.yaml" },
+        { path = "compose/env/env-swagger-ui.compose.yaml" },
+        { path = "compose/env/env-keycloak.compose.yaml" },
+        { path = "compose/env/env-kcadm.compose.yaml" },
+        { path = "compose/env/env-minio.compose.yaml" },
+        { path = "compose/env/env-mcli.compose.yaml" },
+        { path = "compose/app/app-assembly-web.compose.yaml" },
+        { path = "compose/app/app-admin-ui.compose.yaml" },
+        { path = "compose/app/app-worker-product-image.compose.yaml" },
+        { path = "compose/app/app-worker-employee-table.compose.yaml" },
       }
     }
   }
@@ -54,20 +83,24 @@ ggcode.generate "@/haproxy" {
     :from(project)
     :with_rules({
       Haproxy.Route
-        :from_arrow('http://kafka-ui.local.example.com', 'http://env_kafka_ui:8080');
+        :from_arrow('http://kafka-ui.local.example.com', 'http://env-kafka-ui:8080');
       Haproxy.Route
-        :from_arrow('http://pgadmin.local.example.com', 'http://env_pgadmin:80');
+        :from_arrow('http://pgadmin.local.example.com', 'http://env-pgadmin:80');
       Haproxy.Route
-        :from_arrow('http://swagger-ui.local.example.com', 'http://env_swagger_ui:8080');
+        :from_arrow('http://swagger-ui.local.example.com', 'http://env-swagger-ui:8080');
       Haproxy.Route
-        :from_arrow('http://auth.local.example.com', 'http://env_keycloak:8080')
+        :from_arrow('http://auth.local.example.com', 'http://env-keycloak:8080')
         :with_redirect_prefix('/auth');
+      Haproxy.Route
+        :from_arrow('http://minio.local.example.com', 'http://env-minio:9000');
+      Haproxy.Route
+        :from_arrow('http://minio-ui.local.example.com', 'http://env-minio:9001');
       Haproxy.Route
         :from_uri_string('http://admin-ui.local.example.com')
         :with_proxies({
           Haproxy.Proxy
             :from_path_string('/')
-            :with_server(Haproxy.Server:from_uri_string('http://app_admin_ui:80'):with_optional(true))
+            :with_server(Haproxy.Server:from_uri_string('http://app-admin-ui:80'):with_optional(true))
             :with_server(Haproxy.Server:from_uri_string('http://host.docker.internal:5173'):with_optional(true):with_backup(true));
         });
       Haproxy.Route
@@ -77,7 +110,7 @@ ggcode.generate "@/haproxy" {
           Haproxy.Proxy
             :from_path_string('/api/assembly_web')
             :with_cors('*')
-            :with_server(Haproxy.Server:from_uri_string('http://app_assembly_web:8080'):with_optional(true))
+            :with_server(Haproxy.Server:from_uri_string('http://app-assembly-web:8080'):with_optional(true))
             :with_server(Haproxy.Server:from_uri_string('http://host.docker.internal:8080'):with_optional(true):with_backup(true));
           Haproxy.Proxy
             :from_path_string('/api/assembly_web')
@@ -107,6 +140,10 @@ ggcode.generate "@/haproxy" {
             :from_path_string('/api/service_security')
             :with_cors('*')
             :with_server(Haproxy.Server:from_uri_string('http://host.docker.internal:8086'):with_optional(true));
+          Haproxy.Proxy
+            :from_path_string('/api/service_uploads')
+            :with_cors('*')
+            :with_server(Haproxy.Server:from_uri_string('http://host.docker.internal:8087'):with_optional(true));
         });
     })
     :unwrap()
@@ -119,7 +156,7 @@ ggcode.generate "@/kafka" {
   }
 }
 
-ggcode.generate "@/kafka_ui" {
+ggcode.generate "@/kafka-ui" {
   target = '@store',
   variables = {
     project = project:unwrap_project()
@@ -151,7 +188,8 @@ ggcode.generate "@/postgres" {
 ggcode.generate "@/keycloak" {
   target = '@store',
   variables = Keycloak
-    :from(project, datasource_keycloak):unwrap()
+    :from(project, datasource_keycloak)
+    :unwrap()
 }
 
 ggcode.generate "@/kcadm" {
@@ -186,7 +224,65 @@ ggcode.generate "@/kcadm" {
     :unwrap()
 }
 
-ggcode.generate "@/swagger_ui" {
+ggcode.generate "@/minio" {
+  target = '@store',
+  variables = Minio
+    :from(project)
+    :with_link('env-haproxy:minio.local.example.com')
+    :unwrap()
+}
+
+ggcode.generate "@/mcli" {
+  target = '@store',
+  variables = Mcli
+    :from(project)
+    :with_rules({
+      Mcli.User:from('api', 'Qwerty123'),
+
+      Mcli.Grant:from('api', 'readwrite'),
+
+      Mcli.Key:from('api', 'y5LeRZ84J4SsenpaIxMl', 'AZitoDkffcEYFYUmV4CGv1jr2fiXWIw4uSvdFlDu'),
+
+      Mcli.Bucket:from('employee-document')
+        :with_anonymous_access('download'),
+      Mcli.Bucket:from('product-image')
+        :with_anonymous_access('download'),
+      Mcli.Bucket:from('product-image-variant')
+        :with_anonymous_access('download'),
+
+      Mcli.Bucket:from('employee-table'),
+      Mcli.Bucket:from('product-table'),
+      Mcli.Bucket:from('price-table'),
+
+      Mcli.KafkaTarget
+        :from('product_image')
+        :with_broker('env-kafka:29092')
+        :with_topic('minio_product_image')
+        :with_event('product-image', 'put')
+        :with_event('product-image', 'delete'),
+
+      Mcli.KafkaTarget
+        :from('employee_table')
+        :with_broker('env-kafka:29092')
+        :with_topic('minio_employee_table')
+        :with_event('employee-table', 'put'),
+
+      Mcli.KafkaTarget
+        :from('product_table')
+        :with_broker('env-kafka:29092')
+        :with_topic('minio_product_table')
+        :with_event('product-table', 'put'),
+
+      Mcli.KafkaTarget
+        :from('price_table')
+        :with_broker('env-kafka:29092')
+        :with_topic('minio_price_table')
+        :with_event('price-table', 'put'),
+    })
+    :unwrap()
+}
+
+ggcode.generate "@/swagger-ui" {
   target = '@store',
   variables = {
     project = project:unwrap_project(),
@@ -199,6 +295,7 @@ ggcode.generate "@/swagger_ui" {
         { name = "Service Events", url = "http://api.local.example.com/api/service_events/v3/api-docs" },
         { name = "Service Payments", url = "http://api.local.example.com/api/service_payments/v3/api-docs" },
         { name = "Service Security", url = "http://api.local.example.com/api/service_security/v3/api-docs" },
+        { name = "Service Uploads", url = "http://api.local.example.com/api/service_uploads/v3/api-docs" },
       }
     }
   }
@@ -207,22 +304,57 @@ ggcode.generate "@/swagger_ui" {
 ggcode.generate "@/app" {
   target = '@store',
   variables = App
-    :from(project, 'app_assembly_web', 'store/assembly_web:1.0-SNAPSHOT')
-    :with_depends_on('env_kafka')
-    :with_depends_on('env_postgres')
-    :with_depends_on('env_keycloak')
+    :from(project, 'app-assembly-web', 'store/assembly_web:1.0-SNAPSHOT')
+    :with_depends_on('env-kafka')
+    :with_depends_on('env-postgres')
+    :with_depends_on('env-keycloak')
+    :with_depends_on('env-minio')
     :with_spring_datasource(datasource_app)
     :with_app_openid_client(openid_client)
+    :with_app_minio_client(minio_client)
     :with_env_variable('JAVA_OPTS', '-Xmx512m -Xms256m')
-    :with_env_variable('SPRING_KAFKA_BOOTSTRAP_SERVERS', 'env_kafka:29092')
-    :with_link('env_haproxy:auth.local.example.com')
-    -- :with_env_variable('SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI', 'http://env_keycloak:8080/auth/realms/application')
+    :with_env_variable('SPRING_KAFKA_BOOTSTRAP_SERVERS', 'env-kafka:29092')
+    :with_link('env-haproxy:auth.local.example.com')
     :unwrap()
 }
 
 ggcode.generate "@/spa" {
   target = '@store',
   variables = Spa
-    :from(project, 'app_admin_ui', 'store/admin_ui:1.0-SNAPSHOT')
+    :from(project, 'app-admin-ui', 'store/admin_ui:1.0-SNAPSHOT')
+    :unwrap()
+}
+
+ggcode.generate "@/worker" {
+  target = '@store',
+  variables = Worker
+    :from(project, 'app-worker-product-image', 'store/worker_product_image:1.0-SNAPSHOT')
+    :with_depends_on('env-kafka')
+    :with_depends_on('env-minio')
+    :with_volume('app-worker-product-image', '/app/data')
+    :with_packages({ 'imagemagick', 'imagemagick-jpeg', 'imagemagick-svg' })
+    :with_minio_client(minio_client)
+    :with_env_variables({
+      KAFKA_BOOTSTRAP_SERVERS = 'env-kafka:29092',
+      KAFKA_CONSUMER_GROUP = 'worker_product_image.minio_product_image',
+      KAFKA_TOPICS = 'minio_product_image',
+    })
+    :unwrap()
+}
+
+ggcode.generate "@/worker" {
+  target = '@store',
+  variables = Worker
+    :from(project, 'app-worker-employee-table', 'store/worker_employee_table:1.0-SNAPSHOT')
+    :with_depends_on('env-kafka')
+    :with_depends_on('env-minio')
+    :with_volume('app-worker-employee-table', '/app/data')
+    :with_packages({ 'csvq', 'curl' })
+    :with_minio_client(minio_client)
+    :with_env_variables({
+      KAFKA_BOOTSTRAP_SERVERS = 'env-kafka:29092',
+      KAFKA_CONSUMER_GROUP = 'worker_employee_table.minio_employee_table',
+      KAFKA_TOPICS = 'minio_employee_table',
+    })
     :unwrap()
 }

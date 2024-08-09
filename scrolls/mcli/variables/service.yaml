@@ -1,0 +1,16 @@
+name: env-mcli
+manifest:
+  image: bitnami/minio
+  user: root
+  restart: "no"
+  volumes:
+    - ../../config/env/env-mcli/scripts:/opt/scripts
+  entrypoint: /bin/bash /opt/scripts/bootstrap.sh
+  profiles:
+    - never
+  environment:
+    MINIO_TARGET_SERVER: http://env-minio:9000
+    MINIO_ACCESS_KEY: admin
+    MINIO_SECRET_KEY: GfhjkmRfhjkm1
+  networks:
+    default: {}

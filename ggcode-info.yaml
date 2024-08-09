@@ -9,6 +9,8 @@ actions:
 scrolls:
 - name: app
   path: scrolls/app
+- name: make
+  path: scrolls/make
 - name: spa
   path: scrolls/spa
 - name: compose
@@ -19,16 +21,22 @@ scrolls:
   path: scrolls/postgres
 - name: kafka
   path: scrolls/kafka
-- name: kafka_ui
-  path: scrolls/kafka_ui
+- name: kafka-ui
+  path: scrolls/kafka-ui
 - name: kcadm
   path: scrolls/kcadm
 - name: keycloak
   path: scrolls/keycloak
 - name: pgadmin
   path: scrolls/pgadmin
-- name: swagger_ui
-  path: scrolls/swagger_ui
+- name: swagger-ui
+  path: scrolls/swagger-ui
+- name: minio
+  path: scrolls/minio
+- name: mcli
+  path: scrolls/mcli
+- name: worker
+  path: scrolls/worker
 repositories:
 - name: core
   uri: git@github.com:ntr1x/ggcode-repo-core.git

@@ -1,0 +1,21 @@
+name: env-minio
+manifest:
+  image: bitnami/minio
+  restart: unless-stopped
+  ports:
+    - '9000:9000'
+    - '9001:9001'
+  deploy:
+    resources:
+      limits:
+        memory: 250M
+  volumes:
+    - env-minio:/bitnami/minio/data
+  profiles:
+    - env
+    - app
+  environment:
+    MINIO_ROOT_USER: admin
+    MINIO_ROOT_PASSWORD: GfhjkmRfhjkm1
+  networks:
+    default: {}

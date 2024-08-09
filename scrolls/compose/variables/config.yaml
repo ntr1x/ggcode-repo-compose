@@ -1,11 +1,11 @@
 include:
-  - path: compose/env/env_haproxy.compose.yaml
-  - path: compose/env/env_kafka.compose.yaml
-  - path: compose/env/env_kafka_ui.compose.yaml
-  - path: compose/env/env_pgadmin.compose.yaml
-  - path: compose/env/env_postgres.compose.yaml
-  - path: compose/env/env_swagger_ui.compose.yaml
-  - path: compose/env/env_keycloak.compose.yaml
+  - path: compose/env/env-haproxy.compose.yaml
+  - path: compose/env/env-kafka.compose.yaml
+  - path: compose/env/env-kafka-ui.compose.yaml
+  - path: compose/env/env-pgadmin.compose.yaml
+  - path: compose/env/env-postgres.compose.yaml
+  - path: compose/env/env-swagger-ui.compose.yaml
+  - path: compose/env/env-keycloak.compose.yaml
 
 networks:
-  default:
+  default: {}

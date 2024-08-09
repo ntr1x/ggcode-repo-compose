@@ -6,7 +6,7 @@
     - check: true
       port: 8080
       optional: false
-      hostname: env_kafka_ui
+      hostname: env-kafka-ui
     path: /
   port: 80
 - path: ''
@@ -17,6 +17,6 @@
     - check: true
       port: 80
       optional: false
-      hostname: env_pgadmin
+      hostname: env-pgadmin
     path: /
   port: 80

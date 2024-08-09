@@ -7,7 +7,7 @@ local Server = {
   Group = 'Default',
   Port = 5432,
   Username = 'postgres',
-  Host = 'env_postgres',
+  Host = 'env-postgres',
   SSLMode = 'prefer',
   MaintenanceDB = 'postgres'
 }

@@ -1,4 +1,4 @@
-name: env_swagger_ui
+name: env-swagger-ui
 manifest:
   image: swaggerapi/swagger-ui
   restart: unless-stopped
@@ -7,7 +7,7 @@ manifest:
       limits:
         memory: 50M
   volumes:
-    - ../../config/env/env_swagger_ui/swagger-config.json:/usr/share/nginx/html/swagger-config.json
+    - ../../config/env/env-swagger-ui/swagger-config.json:/usr/share/nginx/html/swagger-config.json
   profiles:
     - env
     - app
