@@ -1,0 +1,18 @@
+name: env-kafka-ui
+manifest:
+  image: provectuslabs/kafka-ui:master
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        memory: 250M
+  depends_on:
+    - env-kafka
+  profiles:
+    - env
+    - admin
+  environment:
+    KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: env-kafka:29092
+    KAFKA_CLUSTERS_0_NAME: local
+  networks:
+    default: {}

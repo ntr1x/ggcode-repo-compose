@@ -1,0 +1,1 @@
+template:println(yaml:stringify(routes))

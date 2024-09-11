@@ -1,0 +1,8 @@
+# Dependency directories
+ggcode_modules/
+
+# Expamples target directory
+/app/
+
+# Lock file
+ggcode-info.lock

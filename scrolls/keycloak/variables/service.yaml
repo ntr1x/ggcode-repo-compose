@@ -1,0 +1,33 @@
+name: env-keycloak
+manifest:
+  image: bitnami/keycloak:latest
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        cpus: "1"
+        memory: 1G
+  depends_on:
+    - env-postgres
+  profiles:
+    - env
+    - app
+  environment:
+    KEYCLOAK_ADMIN: admin
+    KEYCLOAK_ADMIN_PASSWORD: GfhjkmRfhjkm1
+    KEYCLOAK_CACHE_TYPE: local
+    KEYCLOAK_DATABASE_HOST: env-postgres
+    KEYCLOAK_DATABASE_NAME: keycloak
+    KEYCLOAK_DATABASE_PASSWORD: keycloak
+    KEYCLOAK_DATABASE_PORT: 5432
+    KEYCLOAK_DATABASE_USER: keycloak
+    KEYCLOAK_ENABLE_HTTPS: "false"
+    KEYCLOAK_ENABLE_STATISTICS: "false"
+    KEYCLOAK_HTTP_PORT: 8080
+    KEYCLOAK_HTTP_RELATIVE_PATH: /auth/
+    KEYCLOAK_LOG_OUTPUT: default
+    KEYCLOAK_PRODUCTION: "false"
+    KEYCLOAK_PROXY: passthrough
+    PROXY_ADDRESS_FORWARDING: "true"
+  networks:
+    default: {}

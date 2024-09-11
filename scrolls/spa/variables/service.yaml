@@ -1,0 +1,12 @@
+name: app-ui
+manifest:
+  image: nginx:latest
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        memory: 600M
+  profiles:
+    - app
+  networks:
+    default: {}

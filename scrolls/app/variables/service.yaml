@@ -1,0 +1,12 @@
+name: app-service-api
+manifest:
+  image: example/service-api:1.0-SNAPSHOT
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        memory: 600M
+  profiles:
+    - app
+  networks:
+    default: {}

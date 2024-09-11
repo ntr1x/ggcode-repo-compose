@@ -1,0 +1,7 @@
+- Name: Postgres
+  Group: Default
+  Port: 5432
+  Username: postgres
+  Host: env-postgres
+  SSLMode: prefer
+  MaintenanceDB: postgres

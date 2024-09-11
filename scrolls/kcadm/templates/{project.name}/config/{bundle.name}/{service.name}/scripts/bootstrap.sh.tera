@@ -1,0 +1,99 @@
+#!/bin/bash
+
+ln -s /opt/bitnami/keycloak/bin/kcadm.sh /usr/local/bin/kcadm
+
+kcadm config credentials --server $KEYCLOAK_TARGET_SERVER --realm $KEYCLOAK_ADMIN_REALM --user $KEYCLOAK_ADMIN --password $KEYCLOAK_ADMIN_PASSWORD
+
+# Create realm
+kcadm create realms -s realm='{{realm.name}}' -s enabled=true
+
+{# Blank line -#}
+{%- if roles | length > 0 -%}
+# Create roles
+{%- for role in roles %}
+{%- if role.client is undefined %}
+kcadm create roles -r '{{realm.name}}' -s name='{{role.name}}' -o
+{%- endif -%}
+{%- endfor %}
+{%- endif %}
+
+{# Blank line -#}
+{%- if groups | length > 0 -%}
+# Create groups
+{%- for group in groups %}
+kcadm create groups -r '{{realm.name}}' -s name='{{group.name}}'
+{%- endfor %}
+{%- endif %}
+
+{# Blank line -#}
+{%- if users | length > 0 -%}
+# Create users
+{%- for user in users %}
+kcadm create users -r '{{realm.name}}' -s username='{{user.username}}' -s email='{{user.email}}' -s enabled=true -s emailVerified=true
+kcadm set-password -r '{{realm.name}}' --username '{{user.username}}' --new-password '{{user.password}}'
+{%- endfor %}
+{%- endif %}
+
+{# Blank line -#}
+{%- if clients | length > 0 -%}
+# Create clients
+{%- for client in clients %}
+kcadm create clients -r '{{realm.name}}'  -f - << EOF
+  {
+    "clientId": "{{client.name}}",
+    "rootUrl": "",
+    "adminUrl": "",
+    "baseUrl": "",
+    "surrogateAuthRequired": false,
+    "enabled": true,
+    "alwaysDisplayInConsole": true,
+    "clientAuthenticatorType": "client-secret",
+    "secret": "{{client.secret}}",
+    "redirectUris": ["*"],
+    "webOrigins": ["*"],
+    "bearerOnly": false,
+    "consentRequired": false,
+    "standardFlowEnabled": true,
+    "implicitFlowEnabled": false,
+    "directAccessGrantsEnabled": true,
+    "serviceAccountsEnabled": true,
+    "publicClient": false,
+    "frontchannelLogout": true,
+    "protocol": "openid-connect",
+    "defaultClientScopes" : [ "web-origins", "acr", "roles", "profile", "email" ],
+    "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
+  }
+EOF
+{%- endfor %}
+{%- endif %}
+
+{# Blank line -#}
+{%- if grants | length > 0 -%}
+# Grant roles
+{%- for grant in grants %}
+{%- if grant.kind == 'group' %}
+kcadm add-roles -r '{{realm.name}}' --gname '{{grant.group}}' --rolename '{{grant.role}}'
+{%- elif grant.kind == 'user' %}
+kcadm add-roles -r '{{realm.name}}' --uusername '{{grant.username}}' --rolename '{{grant.role}}'
+{%- endif -%}
+{%- endfor %}
+{%- endif %}
+
+{# Blank line -#}
+{%- if members | length > 0 -%}
+# Add users to groups
+function add_user_to_group {
+  local member_user=$1
+  local member_group=$2
+  local member_user_id=$(kcadm get users -r '{{realm.name}}' -q exact=true -q username="$member_user" --fields 'id' --format csv | tr -d '"')
+  local member_group_id=$(kcadm get group-by-path/$member_group -r '{{realm.name}}' --fields 'id' --format csv | tr -d '"')
+  if [[ ! -z $member_group_id && ! -z $member_user_id ]]; then
+    echo "Add user with id=$member_user_id ($member_user) to a group with id=$member_group_id ($member_group)"
+    kcadm update -r '{{realm.name}}' users/$member_user_id/groups/$member_group_id
+  fi
+}
+
+{%- for member in members %}
+add_user_to_group '{{member.username}}' '{{member.group}}'
+{%- endfor %}
+{%- endif %}

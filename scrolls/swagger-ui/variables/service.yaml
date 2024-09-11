@@ -1,0 +1,18 @@
+name: env-swagger-ui
+manifest:
+  image: swaggerapi/swagger-ui
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        memory: 50M
+  volumes:
+    - ../../config/env/env-swagger-ui/swagger-config.json:/usr/share/nginx/html/swagger-config.json
+  profiles:
+    - env
+    - app
+  environment:
+      CONFIG_URL: swagger-config.json
+      URL: ""
+  networks:
+    default: {}

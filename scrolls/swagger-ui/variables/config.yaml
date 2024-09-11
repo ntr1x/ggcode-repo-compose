@@ -1,0 +1,4 @@
+queryConfigEnabled: true
+urls:
+- name: Petstore
+  url: https://petstore.swagger.io/v2/swagger.json

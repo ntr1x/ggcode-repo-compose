@@ -1,0 +1,47 @@
+name: compose
+actions:
+- name: generate-store
+  path: actions/generate-store.luau
+- name: test/postgres
+  path: actions/test/postgres.luau
+- name: test/pgadmin
+  path: actions/test/pgadmin.luau
+scrolls:
+- name: app
+  path: scrolls/app
+- name: make
+  path: scrolls/make
+- name: spa
+  path: scrolls/spa
+- name: compose
+  path: scrolls/compose
+- name: haproxy
+  path: scrolls/haproxy
+- name: postgres
+  path: scrolls/postgres
+- name: kafka
+  path: scrolls/kafka
+- name: kafka-ui
+  path: scrolls/kafka-ui
+- name: kcadm
+  path: scrolls/kcadm
+- name: keycloak
+  path: scrolls/keycloak
+- name: pgadmin
+  path: scrolls/pgadmin
+- name: swagger-ui
+  path: scrolls/swagger-ui
+- name: minio
+  path: scrolls/minio
+- name: mcli
+  path: scrolls/mcli
+- name: worker
+  path: scrolls/worker
+repositories:
+- name: core
+  uri: git@github.com:ntr1x/ggcode-repo-core.git
+targets:
+- name: '@app'
+  path: app
+- name: '@store'
+  path: ../../ggcode-generated/ggcode-generated-store

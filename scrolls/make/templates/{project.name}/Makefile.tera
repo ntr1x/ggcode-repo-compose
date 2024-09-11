@@ -1,0 +1,27 @@
+.PHONY: build up down
+
+up:
+	docker compose \
+	  {%- for profile in run.profiles %}
+	  --profile '{{profile}}' \
+	  {%- endfor %}
+	  up -d
+
+down:
+	docker compose --profile '*' down
+
+{%- if build.images | length > 0 %}
+{# Blank line #}
+build:
+	{%- for image in build.images %}
+	@make --no-print-directory build/{{image.bundle}}/{{image.name}}
+	{%- endfor %}
+
+{%- for image in build.images %}
+{# Blank line #}
+build/{{image.bundle}}/{{image.name}}:
+	docker build \
+	  --tag {{image.namespace}}/{{image.name}}:{{image.version}} \
+	  {{image.context}}
+{%- endfor %}
+{%- endif %}

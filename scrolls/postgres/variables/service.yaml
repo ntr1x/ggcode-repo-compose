@@ -1,0 +1,21 @@
+name: env-postgres
+manifest:
+  image: postgres:14
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        memory: 500M
+  volumes:
+    - ../../config/env/env-postgres/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+    - env-postgres:/var/lib/postgresql/data
+  profiles:
+    - env
+    - app
+  ports:
+    - "5432:5432"
+  environment:
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_USER: postgres
+  networks:
+    default: {}

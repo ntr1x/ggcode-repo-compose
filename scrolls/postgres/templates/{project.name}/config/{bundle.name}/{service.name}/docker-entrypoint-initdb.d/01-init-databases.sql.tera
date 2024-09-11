@@ -1,0 +1,19 @@
+-- Bootstrap databases
+{# Blank line -#}
+
+{%- for database in databases %}
+-- Bootstrap "{{database.name}}" database
+
+CREATE USER "{{database.username}}" WITH password '{{database.password}}' CREATEDB;
+
+GRANT "{{database.username}}" TO CURRENT_USER;
+
+CREATE DATABASE "{{database.name}}" encoding='UTF-8' OWNER = "{{database.username}}";
+
+\c {{database.name}}
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+GRANT CREATE ON DATABASE "{{database.name}}" TO "{{database.username}}";
+GRANT USAGE ON SCHEMA public TO "{{database.username}}";
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "{{database.username}}";
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "{{database.username}}";
+{% endfor -%}

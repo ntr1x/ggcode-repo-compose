@@ -1,0 +1,74 @@
+global
+  maxconn 1000
+
+defaults
+  mode tcp
+  timeout client 10s
+  timeout connect 5s
+  timeout server 10s
+  timeout tunnel 300s
+
+frontend stats
+  mode http
+  bind *:8404
+  stats enable
+  stats uri /stats
+  stats refresh 10s
+  stats admin if TRUE
+
+frontend routes
+  mode http
+  bind *:80
+
+  acl acl_is_options method OPTIONS
+  use_backend default_cors if acl_is_options
+
+  {#- Render frontends #}
+  {% for route in routes %}
+  acl acl__{{route.name}}__host hdr(host) -i {{route.hostname}}
+  {%- if route.redirect %}
+  {%- if route.redirect.type == 'prefix' %}
+  acl acl__{{route.name}}__redirect__prefix path_beg {{route.redirect.prefix}}
+  http-request redirect code {{route.redirect.code}} prefix {{route.redirect.prefix}} if acl__{{route.name}}__host !acl__{{route.name}}__redirect__prefix
+  {% endif -%}
+  {%- endif -%}
+  {% for proxy in route.proxies %}
+  acl acl__{{route.name}}__path__{{loop.index}} path {{proxy.path}}
+  acl acl__{{route.name}}__path__{{loop.index}} path_beg {{proxy.path}}
+  use_backend {{route.name}}__{{loop.index}} if acl__{{route.name}}__host acl__{{route.name}}__path__{{loop.index}}
+  {% endfor -%}
+  {%- endfor -%}
+
+{#- CORS backend #}
+backend default_cors
+  mode http
+  http-after-response set-header Access-Control-Allow-Origin "*"
+  http-after-response set-header Access-Control-Allow-Headers "*"
+  http-after-response set-header Access-Control-Allow-Credentials "true"
+  http-after-response set-header Access-Control-Allow-Methods "GET, DELETE, OPTIONS, POST, PUT, PATCH"
+  http-after-response set-header Access-Control-Max-Age "31536000"
+  http-request return status 200
+
+{#- Render backends #}
+{%- for route in routes -%}
+{%- for proxy in route.proxies %}
+{# Blank line #}
+backend {{route.name}}__{{loop.index}}
+  mode http
+  option httpclose
+  option forwardfor if-none
+  option forwarded proto host by by_port for
+  {%- if proxy.cors %}
+  # START CORS
+  http-response add-header Access-Control-Allow-Origin "{{proxy.cors.origin | default(value="*")}}"
+  http-response add-header Access-Control-Allow-Headers "*"
+  http-response add-header Access-Control-Max-Age 3600
+  http-after-response set-header Access-Control-Allow-Credentials "true"
+  http-response add-header Access-Control-Allow-Methods "GET, DELETE, OPTIONS, POST, PUT, PATCH"
+  # END CORS
+  {%- endif %}
+  {%- for server in proxy.servers %}
+  server s{{loop.index}} {{server.hostname}}:{{server.port}}{% if server.check %} check{% if server.check.port %} port {{server.check.port}}{% endif %}{% endif %}{% if server.optional %} init-addr libc,none{% endif %}{% if server.backup %} backup{% endif %}
+  {%- endfor -%}
+{% endfor -%}
+{%- endfor %}

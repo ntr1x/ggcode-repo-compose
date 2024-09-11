@@ -1,0 +1,21 @@
+name: env-haproxy
+manifest:
+  image: haproxy:alpine
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        cpus: "0.5"
+        memory: 200M
+  volumes:
+    - ../../config/env/env-haproxy:/usr/local/etc/haproxy
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  profiles:
+    - env
+    - app
+  ports:
+    - "80:80"
+    - "8404:8404"
+  networks:
+    default:

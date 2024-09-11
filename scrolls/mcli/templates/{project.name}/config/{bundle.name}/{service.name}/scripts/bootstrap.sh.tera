@@ -1,0 +1,46 @@
+#!/bin/bash
+
+mc alias set minio $MINIO_TARGET_SERVER $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
+mc admin info minio
+{# Blank line #}
+{%- for user in users %}
+mc admin user add minio {{user.username}} {{user.password}}
+{%- endfor %}
+{# Blank line #}
+{%- for grant in grants %}
+mc admin policy attach minio {{grant.policy}} --user {{grant.username}}
+{%- endfor %}
+{# Blank line #}
+{%- for key in keys %}
+mc admin user svcacct add \
+  --access-key "{{key.access_key}}" \
+  --secret-key "{{key.secret_key}}" \
+  minio {{key.username}}
+{%- endfor %}
+{# Blank line #}
+{%- for bucket in buckets %}
+mc mb minio/{{bucket.name}}
+{%- endfor %}
+{# Blank line #}
+{%- for bucket in buckets %}
+{%- for command in bucket.anonymous_access %}
+mc anonymous set {{command}} minio/{{bucket.name}}
+{%- endfor %}
+{%- endfor %}
+
+{%- for target in targets %}
+{%- if target.type == 'KafkaTarget' %}
+{# Blank line #}
+mc admin config set minio/ notify_kafka:{{target.name}} \
+   brokers="{{target.brokers | join(sep=',')}}" \
+   topic="{{target.topic}}"
+{%- endif %}
+{%- endfor %}
+{# Blank line #}
+mc admin service restart minio
+{# Blank line #}
+{%- for target in targets %}
+{%- for key, event in target.events %}
+mc event add minio/{{event.bucket}} arn:minio:sqs::{{target.name}}:kafka{% if event.actions | length > 0 %} --event {{event.actions | join(sep=",")}}{% endif %}
+{%- endfor %}
+{%- endfor %}

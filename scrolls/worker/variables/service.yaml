@@ -1,0 +1,12 @@
+name: worker-example
+manifest:
+  image: worker_example:latest
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        memory: 200M
+  profiles:
+    - app
+  networks:
+    default: {}
